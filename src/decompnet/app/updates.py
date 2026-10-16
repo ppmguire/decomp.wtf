@@ -26,8 +26,10 @@ from pathlib import Path
 
 from .. import __version__, hostenv, toolchains
 
-REPO = "i12bp8/decomp.wtf"
-SITE = "https://decomp.wtf"
+# This fork checks for and installs updates only from its own GitHub repository: never from the original decomp.wtf
+# website (the project was discontinued, and a website that changes hands could serve anything).
+REPO = "ppmguire/decomp.wtf"
+ORIGINAL = "i12bp8/decomp.wtf"
 RECHECK = {"release": 3 * 3600, "branch": 15 * 60}  # GitHub allows 60 unauthenticated API calls an hour
 
 
@@ -44,6 +46,9 @@ def installed() -> dict:
     if not isinstance(data, dict) or data.get("channel") not in ("release", "branch"):
         data = {"channel": "release"}
     data.setdefault("repo", REPO)
+    # an install made from the original project still names it: its updates come from this fork from now on
+    if data["repo"] == ORIGINAL:
+        data["repo"] = REPO
     data["version"] = __version__
     return data
 
@@ -78,20 +83,16 @@ def _first_line(message: str) -> str:
 
 
 def _check_release(cur: dict) -> dict:
-    try:
-        text, site = _get(f"{SITE}/install.sh").decode("utf-8", "replace"), True
-    except OSError:  # decomp.wtf can't be reached from here (a filter, an outage): the release on GitHub
-        text, site = _get(f"https://raw.githubusercontent.com/{cur['repo']}/main/site/public/install.sh").decode(
-            "utf-8", "replace"), False
+    repo = cur["repo"]
+    text = _get(f"https://raw.githubusercontent.com/{repo}/main/site/public/install.sh").decode("utf-8", "replace")
     m = re.search(r'^VERSION="([^"]+)"', text, re.M)
     if not m:
         raise ValueError("decomp.wtf didn't say which version is current")
     latest = m.group(1)
     newer = version_key(latest) > version_key(cur["version"])
-    spec = (f"decompnet @ {SITE}/dl/decompnet-{latest}-py3-none-any.whl" if site else
-            f"decompnet @ https://github.com/{cur['repo']}/archive/refs/tags/v{latest}.tar.gz")
+    spec = f"decompnet @ https://github.com/{repo}/archive/refs/tags/v{latest}.tar.gz"
     return {"available": newer, "latest": {"version": latest, "commit": "", "date": None},
-            "notes": [], "link": f"https://github.com/{cur['repo']}/commits/main", "spec": spec}
+            "notes": [], "link": f"https://github.com/{repo}/commits/main", "spec": spec}
 
 
 def _branch_version(repo: str, sha: str) -> str:
@@ -151,7 +152,7 @@ def uv() -> str | None:
 def can_apply() -> tuple[bool, str]:
     if sys.platform == "win32":
         return False, ("decomp.wtf now runs in WSL 2 on Windows: run the installer again in PowerShell "
-                       "(irm https://decomp.wtf/install.ps1 | iex) to switch to it")
+                       "(irm https://raw.githubusercontent.com/ppmguire/decomp.wtf/main/site/public/install.ps1 | iex) to switch to it")
     if not uv():
         return False, "uv isn't installed here, so decomp.wtf can't update itself: run the installer again"
     return True, ""

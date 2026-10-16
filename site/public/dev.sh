@@ -5,7 +5,7 @@
 #
 # Runs the dev branch's own installer (install.sh on GitHub) with DECOMP_BRANCH=dev: decomp.wtf installs from the
 # branch's newest commit, and the app then offers every new commit pushed there as an update (one click).
-# Back to releases: curl -fsSL https://decomp.wtf/install.sh | bash
+# Back to releases: curl -fsSL https://raw.githubusercontent.com/ppmguire/decomp.wtf/main/site/public/install.sh | bash
 set -euo pipefail
 BRANCH="${DECOMP_BRANCH:-dev}"
-curl -fsSL "https://raw.githubusercontent.com/i12bp8/decomp.wtf/$BRANCH/site/public/install.sh" | DECOMP_BRANCH="$BRANCH" bash -s -- "$@"
+curl -fsSL "https://raw.githubusercontent.com/ppmguire/decomp.wtf/$BRANCH/site/public/install.sh" | DECOMP_BRANCH="$BRANCH" bash -s -- "$@"

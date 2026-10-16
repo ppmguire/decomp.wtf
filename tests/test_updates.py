@@ -31,25 +31,27 @@ def test_install_info_round_trip():
 
 def test_release_update(monkeypatch):
     newer = ".".join(str(x + (1 if i == 2 else 0)) for i, x in enumerate(updates.version_key(__version__)))
-    monkeypatch.setattr(updates, "_get", lambda url, timeout=15: f'#!/bin/sh\nVERSION="{newer}"\n'.encode())
+    asked = []
+    monkeypatch.setattr(updates, "_get", lambda url, timeout=15: asked.append(url) or f'#!/bin/sh\nVERSION="{newer}"\n'.encode())
     found = updates.check()
     assert found["available"] and found["latest"]["version"] == newer and found["error"] is None
-    assert found["spec"] == f"decompnet @ https://decomp.wtf/dl/decompnet-{newer}-py3-none-any.whl"
+    assert found["spec"] == f"decompnet @ https://github.com/ppmguire/decomp.wtf/archive/refs/tags/v{newer}.tar.gz"
+    assert asked == ["https://raw.githubusercontent.com/ppmguire/decomp.wtf/main/site/public/install.sh"], "never the old website"
     monkeypatch.setattr(updates, "_get", lambda url, timeout=15: f'VERSION="{__version__}"\n'.encode())
     assert not updates.check()["available"]
 
 
-def test_release_update_from_github_when_decomp_wtf_is_unreachable(monkeypatch):
-    """Issue #15: decomp.wtf blocked or down: the release's version from GitHub, installed from its tag's archive."""
+def test_an_install_from_the_original_project_updates_from_this_fork(monkeypatch):
+    """Installed from i12bp8/decomp.wtf before the fork: the next update comes from the fork, never the original."""
+    updates.record("release", repo="i12bp8/decomp.wtf")
+    assert updates.installed()["repo"] == "ppmguire/decomp.wtf"
     def get(url, timeout=15):
-        if url.startswith(updates.SITE):
-            raise urllib.error.URLError("blocked")
-        assert url == "https://raw.githubusercontent.com/i12bp8/decomp.wtf/main/site/public/install.sh"
+        assert url == "https://raw.githubusercontent.com/ppmguire/decomp.wtf/main/site/public/install.sh"
         return b'VERSION="99.0.0"\n'
     monkeypatch.setattr(updates, "_get", get)
     found = updates.check()
     assert found["available"] and found["latest"]["version"] == "99.0.0" and found["error"] is None
-    assert found["spec"] == "decompnet @ https://github.com/i12bp8/decomp.wtf/archive/refs/tags/v99.0.0.tar.gz"
+    assert found["spec"] == "decompnet @ https://github.com/ppmguire/decomp.wtf/archive/refs/tags/v99.0.0.tar.gz"
 
 
 def test_branch_update(monkeypatch):
@@ -64,7 +66,7 @@ def test_branch_update(monkeypatch):
     monkeypatch.setattr(updates, "_branch_version", lambda repo, sha: "0.10.0")
     found = updates.check()
     assert found["available"] and found["latest"]["commit"] == head and found["notes"] == ["Newest", "Older one"]
-    assert found["spec"] == f"decompnet @ https://github.com/i12bp8/decomp.wtf/archive/{head}.tar.gz"
+    assert found["spec"] == f"decompnet @ https://github.com/ppmguire/decomp.wtf/archive/{head}.tar.gz"
 
     # installed from a commit newer than the branch (pushed elsewhere): not an "update"
     answers[f"compare/{have}...{head}"] = {"status": "behind", "commits": []}
@@ -105,7 +107,7 @@ def test_install_runs_uv_then_the_new_setup(tmp_path, monkeypatch):
     monkeypatch.setattr(updates, "uv", lambda: str(uv))
     updates.record("branch", "cross-platform", "1" * 40)
     found = {"current": updates.installed(), "available": True, "latest": {"version": "0.10.0", "commit": "2" * 40},
-             "spec": "decompnet @ https://github.com/i12bp8/decomp.wtf/archive/" + "2" * 40 + ".tar.gz"}
+             "spec": "decompnet @ https://github.com/ppmguire/decomp.wtf/archive/" + "2" * 40 + ".tar.gz"}
     said = []
     updates.install(found, log=said.append)
     ran = calls.read_text().splitlines()

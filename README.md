@@ -1,3 +1,7 @@
+## About this fork
+
+This is an archived and maintained fork of [i12bp8/decomp.wtf](https://github.com/i12bp8/decomp.wtf), MIT licensed like the original. It installs and updates only from this GitHub repository, never from the decomp.wtf website (a discontinued project's address can change hands). The original author's requests below still apply: use it only on games you own, don't share the game code it produces, and respect the rules of the projects you work with.
+
 ## This project is discontinued
 
 I've decided to stop working on decomp.wtf and archive it.
@@ -78,20 +82,20 @@ same script as on Linux. macOS isn't supported.
 **Linux**
 
 ```
-curl -fsSL https://decomp.wtf/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ppmguire/decomp.wtf/main/site/public/install.sh | bash
 ```
 
 Can't reach decomp.wtf from your network? The same installer from GitHub (it then installs the release from GitHub
 too):
 
 ```
-curl -fsSL https://raw.githubusercontent.com/i12bp8/decomp.wtf/main/site/public/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ppmguire/decomp.wtf/main/site/public/install.sh | bash
 ```
 
 **Windows** (PowerShell; new and still unstable: problems are worth an [issue](https://github.com/i12bp8/decomp.wtf/issues))
 
 ```
-irm https://decomp.wtf/install.ps1 | iex
+irm https://raw.githubusercontent.com/ppmguire/decomp.wtf/main/site/public/install.ps1 | iex
 ```
 
 It turns on WSL 2 if it isn't yet (Windows asks for permission once, and may want a restart), makes decomp.wtf's
@@ -129,7 +133,7 @@ when needed; you can also add it yourself (`claude mcp add decomp -- decomp mcp`
 
 | Agent | Install it as a package instead |
 | :-- | :-- |
-| **Claude Code** | `/plugin marketplace add i12bp8/decomp.wtf`, then `/plugin install decomp-wtf@decomp-wtf` (adds a "decompile" skill) |
+| **Claude Code** | `/plugin marketplace add ppmguire/decomp.wtf`, then `/plugin install decomp-wtf@decomp-wtf` (adds a "decompile" skill) |
 | **Codex, Antigravity CLI, opencode** | `decomp connect codex`, `decomp connect antigravity`, `decomp connect opencode` |
 
 ## How it works
@@ -282,7 +286,7 @@ website: the people who decompile together host their room and decide who's in.
 **On a server** (or any always-on machine):
 
 ```
-curl -fsSL https://decomp.wtf/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ppmguire/decomp.wtf/main/site/public/install.sh | bash
 decomp host mygame.z64 --own-copy --address http://my-server:6481 --service
 ```
 
@@ -403,8 +407,8 @@ powershell -ExecutionPolicy Bypass -File site\public\install.ps1      # Windows
 bash site/public/install.sh                                           # Linux
 ```
 
-Without a checkout: `$env:DECOMP_BRANCH = "<branch>"; irm https://raw.githubusercontent.com/i12bp8/decomp.wtf/<branch>/site/public/install.ps1 | iex`
-on Windows, `curl -fsSL https://raw.githubusercontent.com/i12bp8/decomp.wtf/<branch>/site/public/install.sh | DECOMP_BRANCH=<branch> bash`
+Without a checkout: `$env:DECOMP_BRANCH = "<branch>"; irm https://raw.githubusercontent.com/ppmguire/decomp.wtf/<branch>/site/public/install.ps1 | iex`
+on Windows, `curl -fsSL https://raw.githubusercontent.com/ppmguire/decomp.wtf/<branch>/site/public/install.sh | DECOMP_BRANCH=<branch> bash`
 on Linux. `decomp update` (or the app's Settings) installs the newest commit by hand.
 
 </details>
