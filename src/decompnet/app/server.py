@@ -256,6 +256,18 @@ def _static(name: str) -> bytes | None:
         return None
 
 
+def extra_hosts(port: int) -> set[str]:
+    """Addresses besides this computer's own that may open the app, from DECOMP_ALLOWED_HOSTS (comma-separated, such
+    as "10.0.5.54" or "decomp.lan:6464"; without a port, the app's): to open it from another computer on the local
+    network. Every request still needs the app's secret; this only widens the Host check that keeps web pages out."""
+    out: set[str] = set()
+    for host in (os.environ.get("DECOMP_ALLOWED_HOSTS") or "").split(","):
+        host = host.strip().lower()
+        if re.fullmatch(r"[a-z0-9.-]+(:\d{1,5})?", host):
+            out.add(host if ":" in host else f"{host}:{port}")
+    return out
+
+
 def build(net: RomNetwork, home: Path, port: int, secret: str):
     mcp_url = f"http://127.0.0.1:{port}/mcp"
     build_id = (updates.installed().get("commit") or "")[:12]  # a branch install: the commit it came from
@@ -268,7 +280,7 @@ def build(net: RomNetwork, home: Path, port: int, secret: str):
         settings.data["running_agents"] = running
         settings.save()
     manager.persist = remember
-    allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
+    allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"} | extra_hosts(port)
 
     def agent_of(ctx: Context):
         headers = ctx.headers or {}

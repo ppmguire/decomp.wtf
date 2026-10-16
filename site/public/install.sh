@@ -21,7 +21,7 @@
 # On a server, decomp.wtf also runs in Docker: docker-compose.yml in the repository.
 set -euo pipefail
 
-VERSION="0.10.7"
+VERSION="0.10.8"
 # This fork installs and updates only from its own GitHub repository, never from the original decomp.wtf website
 # (the project was discontinued, and a website that changes hands could serve anything).
 REPO="ppmguire/decomp.wtf"

@@ -50,6 +50,26 @@ def test_gui_needs_the_secret_and_the_right_host(app):
     assert client.post("/api/settings", json={"autopilot": False}, headers={"X-Decomp": "1"}).json()["autopilot"] is False
 
 
+def test_other_computers_can_open_it_at_addresses_allowed_in_the_environment(tmp_path, monkeypatch):
+    """DECOMP_ALLOWED_HOSTS: the app opened from another computer on the network, still only with the secret."""
+    from decompnet.app.server import extra_hosts
+
+    monkeypatch.setenv("DECOMP_ALLOWED_HOSTS", " 10.0.5.54 , Decomp.LAN:7000, bad host!, ")
+    assert extra_hosts(PORT) == {f"10.0.5.54:{PORT}", "decomp.lan:7000"}
+    (tmp_path / ".decomp").mkdir()
+    mcp, _, security = build(RomNetwork(tmp_path / ".decomp" / "decomp.db", tmp_path), tmp_path / ".decomp", PORT, SECRET)
+    lan = TestClient(mcp.streamable_http_app(transport_security=security, host="127.0.0.1"), base_url=f"http://10.0.5.54:{PORT}")
+    assert lan.get("/").status_code == 401, "the secret is still needed"
+    assert lan.get(f"/?k={SECRET}", follow_redirects=False).status_code == 303
+    lan.cookies.set("decomp_live", SECRET)
+    assert lan.get("/api/state").status_code == 200
+    other = TestClient(lan.app, base_url=f"http://10.0.5.99:{PORT}")
+    other.cookies.set("decomp_live", SECRET)
+    assert other.get("/api/state").status_code == 403, "an address not named is refused as before"
+    monkeypatch.delenv("DECOMP_ALLOWED_HOSTS")
+    assert extra_hosts(PORT) == set()
+
+
 @needs_demo
 def test_import_demo_and_follow_it_live(app):
     client, net, _ = app

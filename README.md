@@ -2,6 +2,8 @@
 
 This is an archived and maintained fork of [i12bp8/decomp.wtf](https://github.com/i12bp8/decomp.wtf), MIT licensed like the original. It installs and updates only from this GitHub repository, never from the decomp.wtf website (a discontinued project's address can change hands). The original author's requests below still apply: use it only on games you own, don't share the game code it produces, and respect the rules of the projects you work with.
 
+**Opening it from another computer** (0.10.8): it answers only on the computer it runs on, unless you name the addresses others may use, for example `export DECOMP_ALLOWED_HOSTS=10.0.5.54` in `~/.profile` (comma-separated; a port is optional). It then also listens on the network, and `decomp url` prints the address to open from the other computer. Every visit still needs the app's secret from that link; keep it to your own network.
+
 ## This project is discontinued
 
 I've decided to stop working on decomp.wtf and archive it.

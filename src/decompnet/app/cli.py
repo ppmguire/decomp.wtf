@@ -73,9 +73,12 @@ def replace_older(state_file: Path, log=print) -> dict | None:
 
 
 def _bind_address() -> str:
-    """127.0.0.1, except in decomp.wtf's Docker container: there the published port (127.0.0.1 on the computer
-    itself) arrives from outside the container. Host headers are still checked on every request (server.py)."""
-    return os.environ.get("DECOMP_BIND") or ("0.0.0.0" if hostenv.runtime() == "docker" else "127.0.0.1")
+    """127.0.0.1, except in decomp.wtf's Docker container (there the published port, 127.0.0.1 on the computer
+    itself, arrives from outside the container) and when DECOMP_ALLOWED_HOSTS names addresses other computers on the
+    network may open it from. Host headers are still checked on every request (server.py)."""
+    if os.environ.get("DECOMP_BIND"):
+        return os.environ["DECOMP_BIND"]
+    return "0.0.0.0" if hostenv.runtime() == "docker" or os.environ.get("DECOMP_ALLOWED_HOSTS", "").strip() else "127.0.0.1"
 
 
 def _listen(start: int, exact: bool = False) -> socket.socket:
@@ -171,8 +174,13 @@ def url_cmd(args) -> int:
     """Print the address that opens the app (starting it in the background first if needed)."""
     from .bridge import ensure_app
 
+    from .server import extra_hosts
+
     info = ensure_app(home_dir())
     print(f"http://127.0.0.1:{info['port']}/?k={info['secret']}")
+    # and from other computers, at the addresses DECOMP_ALLOWED_HOSTS allows
+    for host in sorted(extra_hosts(info["port"])):
+        print(f"http://{host}/?k={info['secret']}")
     return 0
 
 

@@ -21,7 +21,7 @@
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"  # Windows PowerShell downloads many times slower while drawing a progress bar
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-$Version = "0.10.7"
+$Version = "0.10.8"
 # This fork installs only from its own GitHub repository, never from the original decomp.wtf website.
 $Repo = "ppmguire/decomp.wtf"
 $Distro = "decomp-wtf"
